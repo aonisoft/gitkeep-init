@@ -1,8 +1,22 @@
 
 :default:
 
-  gitkp SUBCOMMAND
-  Utility to mark the initial repo structure with .gitkeep files.
+  gitkp SUBCOMMAND [OPTIONS]
+
+  Utility to mark the initial repository structure with .gitkeep files,
+  understanding the .gitignore by itself.
+
+  Subcommands:
+   run        create the .gitkeep files (default)
+   dry-run    show what would be created, without touching anything
+   undo       remove the .gitkeep files that run created
+   help       show help (of a subcommand if given)
+
+  Options:
+   -c, --commit [MESSAGE]   commit the created .gitkeep files (message optional)
+   --force-root PATH        force a .gitkeep in PATH root (repeatable)
+
+  Run 'gitkp help <subcommand>' for details of a specific subcommand.
 :_default:
 
 :run:
