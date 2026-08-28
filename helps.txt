@@ -45,6 +45,12 @@
 
   Usage: gitkp undo
   Remove the .gitkeep files created by this tool.
+
+  If the .gitkeep files were committed with run -c and the last commit
+  contains only .gitkeep files, the commit is undone first (git reset)
+  and then the files are removed.
+  If there are later commits or the files are part of older history,
+  they are skipped (the tool does not rewrite history).
 :_undo:
 
 :help:

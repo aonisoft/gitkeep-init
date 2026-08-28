@@ -14,6 +14,10 @@ function gitkp()
 {
     parse_options "${@:-}" || return 0
 
+    if [[ "$UNDO" == "true" ]]; then
+        uncommit_last_gitkeep_commit
+    fi
+
     while IFS= read -r -d '' d; do
         process_directory "$d"
     done < <(collect_directories)
@@ -23,6 +27,43 @@ function gitkp()
     fi
 
     echo "Done."
+}
+
+# if the last commit was made by run -c (only .gitkeep files),
+# undo it: unstage and let the following loop remove them.
+# If there are later commits or other files, do nothing.
+function uncommit_last_gitkeep_commit()
+{
+    if ! is_gitkeep_commit; then
+        return
+    fi
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+        echo "  would reset: uncommit the last .gitkeep commit"
+        return
+    fi
+
+    if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+        git reset HEAD~1
+    else
+        git update-ref -d HEAD
+        git reset -q
+    fi
+
+    echo "  reset: uncommitted the last .gitkeep commit"
+}
+
+# true if the last commit contains only .gitkeep files
+function is_gitkeep_commit()
+{
+    git rev-parse --verify HEAD >/dev/null 2>&1 || return 1
+
+    local file
+    while IFS= read -r file; do
+        [[ "$file" == *.gitkeep ]] || return 1
+    done < <(git show --name-only --format= HEAD 2>/dev/null)
+
+    return 0
 }
 
 function parse_options()
@@ -36,7 +77,7 @@ function parse_options()
     local two="${2/+(-h|--help|help|h)/help}"
 
     if [[ $one == "help" || $two == "help" ]]; then
-        gitkp_help "$1"
+        gitkp_help "$2"
         return 1
     fi
 
@@ -174,10 +215,22 @@ function gitkeep_action()
 
     if [[ "$DRY_RUN" == "true" ]]; then
         echo "  would $action: $file"
-    else
-        [[ "$action" == "create" ]] && touch "$file" || rm -f "$file"
-        echo "  ${action}d:      $file"
+        return
     fi
+
+    if [[ "$action" == "remove" ]] && is_committed "$file"; then
+        echo "  skipped:     $file (already committed)"
+        return
+    fi
+
+    [[ "$action" == "create" ]] && touch "$file" || rm -f "$file"
+    echo "  ${action}d:      $file"
+}
+
+# true if the file exists in the last commit
+function is_committed()
+{
+    git cat-file -e "HEAD:$1" 2>/dev/null
 }
 
 function is_ignored_by_git()
@@ -192,7 +245,7 @@ function commit_gitkeeps()
         return
     fi
 
-    git add --all
+    git add $( find . -name .gitkeep -not -path './.git/*' )
 
     git commit -m "$COMMIT_MESSAGE"
 }
