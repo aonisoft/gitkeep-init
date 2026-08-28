@@ -12,7 +12,7 @@ shopt -s extglob
 
 function gitkp()
 {
-    parse_options "${@:-}"
+    parse_options "${@:-}" || return 0
 
     while IFS= read -r -d '' d; do
         process_directory "$d"
@@ -37,7 +37,7 @@ function parse_options()
 
     if [[ $one == "help" || $two == "help" ]]; then
         gitkp_help "$1"
-        return 0
+        return 1
     fi
 
     while [[ $# -gt 0 ]]; do
@@ -51,7 +51,7 @@ function parse_options()
                 ;;
             --force-root)    add_force_root_path "$2" || return 1
                              shift 2 ;;
-            *)               gitkp_help; return 0 ;;
+            *)               gitkp_help; return 1 ;;
         esac
     done
 }
@@ -144,10 +144,12 @@ function is_forced_root()
 function has_tracked_subdirectories()
 {
     local sub
+
     for sub in "$1"/*/; do
         [[ -d "$sub" ]] || continue
         is_ignored_by_git "${sub%/}" || return 0
     done
+    
     return 1
 }
 
