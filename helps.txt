@@ -1,0 +1,41 @@
+
+:default:
+
+  gitkp SUBCOMMAND
+  Utility to mark the initial repo structure with .gitkeep files.
+:_default:
+
+:run:
+
+  Usage: gitkp run [-c [MESSAGE]] [--force-root PATH ...]
+  Create the .gitkeep files in every leaf directory (no subdirectories),
+  respecting the .gitignore.
+
+  Options:
+   -c, --commit [MESSAGE]   commit the created .gitkeep files. The message is
+                            optional: default message if none given.
+   --force-root PATH        only one .gitkeep in PATH root (dynamic/ignored
+                            interior). Repeatable.
+  Example:
+   gitkp run --force-root var
+   gitkp run -c "init: add .gitkeep"
+:_run:
+
+:dry-run:
+
+  Usage: gitkp dry-run [-c [MESSAGE]] [--force-root PATH ...]
+  Show what would be created, without touching anything.
+:_dry-run:
+
+:undo:
+
+  Usage: gitkp undo
+  Remove the .gitkeep files created by this tool.
+:_undo:
+
+:help:
+
+  Usage: gitkp help
+  Show this help.
+:_help:
+
