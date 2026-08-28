@@ -37,7 +37,7 @@ function parse_options()
 
     if [[ $one == "help" || $two == "help" ]]; then
         gitkp_help "$1"
-        exit 0
+        return 0
     fi
 
     while [[ $# -gt 0 ]]; do
@@ -49,9 +49,9 @@ function parse_options()
                 COMMIT=true
                 take_optional_message "$@" && shift 2 || shift
                 ;;
-            --force-root)    add_force_root_path "$2" || exit 1
+            --force-root)    add_force_root_path "$2" || return 1
                              shift 2 ;;
-            *)               gitkp_help; exit 0 ;;
+            *)               gitkp_help; return 0 ;;
         esac
     done
 }
